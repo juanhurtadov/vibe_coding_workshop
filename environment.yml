@@ -1,0 +1,13 @@
+name: example-environment
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12
+  - numpy
+  - pandas
+  - nodejs=20.*
+  - pip
+  #- pip:
+  #    - docx # A package only available via PyPI
+  #    - gooey
