@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
+
+const NodeMap = dynamic(() => import("@/components/NodeMap"), { ssr: false });
 import {
   BarChart,
   Bar,
@@ -304,6 +307,30 @@ export default function DashboardPage() {
                   />
                 </BarChart>
               </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* ERCOT node map */}
+          <Card className="border-zinc-800 bg-zinc-900">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base text-white">
+                ERCOT Hub Nodes
+                <span className="ml-2 text-xs font-normal text-zinc-500">
+                  click a node to switch · color = latest LMP price
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0 pb-1">
+              <div className="h-72 px-2 pb-2">
+                <NodeMap selectedNode={node} onSelectNode={setNode} />
+              </div>
+              <div className="flex flex-wrap gap-3 px-5 pb-4 text-xs text-zinc-500">
+                <span className="flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full bg-violet-500" /> Negative (curtailment)</span>
+                <span className="flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full bg-cyan-400" /> &lt; $30</span>
+                <span className="flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full bg-green-500" /> $30–60</span>
+                <span className="flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full bg-amber-400" /> $60–100</span>
+                <span className="flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full bg-red-500" /> &gt; $100</span>
+              </div>
             </CardContent>
           </Card>
         </>
