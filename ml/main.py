@@ -68,6 +68,8 @@ _base_image = (
         "torch==2.5.1",
         "pandas==2.2.3",
         "numpy==1.26.4",
+        "langgraph>=0.2.0",
+        "openai>=1.0.0",
     )
     .run_commands("python -c 'import cmdstanpy; cmdstanpy.install_cmdstan(overwrite=True)'")
 )
@@ -81,7 +83,7 @@ ml_image = (
         copy=True,
     )
     .run_function(_compile_prophet)
-    .add_local_python_source("forecaster", "optimizer", "rl_agent")
+    .add_local_python_source("forecaster", "optimizer", "rl_agent", "agent")
 )
 
 # ─── Forecast endpoint ────────────────────────────────────────────────────
@@ -160,6 +162,54 @@ def rl(body: dict) -> dict:
         return {"error": "forecast_prices and battery are required"}
 
     return rl_dispatch(forecast_prices, battery, start_hour=start_hour, dow=dow)
+
+
+# ─── LangGraph agent endpoint ─────────────────────────────────────────────
+
+@app.function(
+    image=ml_image,
+    timeout=60,
+    secrets=[modal.Secret.from_name("openai-secret")],
+)
+@modal.fastapi_endpoint(method="POST")
+def agent(body: dict) -> dict:
+    """
+    Body: {
+        forecast: [{ds, yhat, yhat_lower, yhat_upper}],
+        lp_schedule: {schedule, total_expected_revenue, status},
+        rl_schedule: {schedule, total_expected_revenue, policy},
+        battery: {...},
+        node: str
+    }
+    Returns: {
+        recommendation_text: str,
+        selected_strategy: "lp" | "rl",
+        peak_hours: [int],
+        trough_hours: [int]
+    }
+    """
+    from agent import run_agent
+
+    forecast = body.get("forecast", [])
+    lp_schedule = body.get("lp_schedule", {})
+    rl_schedule = body.get("rl_schedule", {})
+    battery = body.get("battery", {})
+    node = body.get("node", "HB_NORTH")
+
+    if not forecast:
+        return {"error": "forecast array is required"}
+
+    try:
+        return run_agent(
+            forecast=forecast,
+            lp_schedule=lp_schedule,
+            rl_schedule=rl_schedule,
+            battery=battery,
+            node=node,
+        )
+    except Exception as exc:
+        import traceback
+        return {"error": str(exc), "traceback": traceback.format_exc()}
 
 
 # ─── Local test ───────────────────────────────────────────────────────────
