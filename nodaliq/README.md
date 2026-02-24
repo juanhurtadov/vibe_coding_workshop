@@ -26,10 +26,10 @@ Battery owners in ERCOT face the same question every day: when do I charge, when
 | Phase | Status | Description |
 |-------|--------|-------------|
 | 1 — Foundation | ✅ Done | Next.js 16, Tailwind v4, Shadcn, landing page |
-| 2 — Database | 🔄 In progress | Neon Postgres + pgvector schema, Drizzle ORM |
-| 3 — Auth | Pending | Clerk sign-in/up, protected dashboard routes |
-| 4 — ERCOT pipeline | Pending | Fetch + store real LMP prices |
-| 5 — ML layer | Pending | Prophet forecaster + LP optimizer + SAC RL policy on Modal |
+| 2 — Database | ✅ Done | Neon Postgres + pgvector schema, Drizzle ORM, health check |
+| 3 — Auth | ✅ Done | Clerk sign-in/up, proxy middleware, protected dashboard shell with sidebar |
+| 4 — ERCOT pipeline | ✅ Done | Full OAuth (B2C_1_PUBAPI-ROPC-FLOW), real DAM prices in Neon incl. negative HB_WEST prices, seed fallback |
+| 5 — ML layer | ✅ Done | Prophet + LP + SAC RL deployed on Modal; `/api/forecast` and `/api/simulate` live |
 | 6 — Agent | Pending | LangGraph pipeline → daily recommendation |
 | 7 — RAG | Pending | Document upload + pgvector chat |
 | 8 — Dashboard | Pending | Dispatch chart, recommendation card, P&L tracker |
@@ -97,12 +97,16 @@ npm run dev                  # localhost:3000
 ### Required environment variables
 
 ```
-DATABASE_URL=          # Neon connection string (pooled)
+DATABASE_URL=                        # Neon connection string (pooled)
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
 CLERK_SECRET_KEY=
-OPENAI_API_KEY=
-MODAL_TOKEN_ID=        # for calling Modal endpoints
-MODAL_TOKEN_SECRET=
+ERCOT_API_KEY=                       # developer.ercot.com subscription key
+ERCOT_USERNAME=                      # developer.ercot.com login
+ERCOT_PASSWORD=
+MODAL_FORECAST_URL=                  # from: modal deploy ml/main.py
+MODAL_OPTIMIZE_URL=
+MODAL_RL_URL=
+OPENAI_API_KEY=                      # for agent synthesis + RAG embeddings (Phase 6+)
 ```
 
 ### Database
@@ -123,17 +127,25 @@ nodaliq/
 │   ├── layout.tsx                # root layout + metadata
 │   ├── (auth)/                   # Clerk auth pages
 │   ├── (dashboard)/              # protected app shell
-│   └── api/                      # Next.js API routes
+│   └── api/
+│       ├── health/               # DB connectivity check
+│       ├── ingest/               # fetch + store ERCOT DAM prices
+│       ├── forecast/             # call Modal Prophet forecaster
+│       └── simulate/             # call Modal LP + RL in parallel
 ├── components/
 │   └── ui/                       # Shadcn components (owned, not a dep)
 ├── lib/
 │   ├── db.ts                     # Neon + Drizzle client
+│   ├── ercot.ts                  # ERCOT OAuth + DAM price fetcher
 │   ├── schema.ts                 # Drizzle table definitions
 │   └── utils.ts                  # cn() helper
-└── ml/                           # Python — deployed to Modal
-    ├── forecaster.py
-    ├── optimizer.py
-    └── agent.py
+ml/                               # Python — deployed to Modal
+├── main.py                       # Modal app (3 fastapi_endpoint functions)
+├── forecaster.py                 # Prophet price forecast
+├── optimizer.py                  # PuLP LP dispatch solver
+├── rl_agent.py                   # SAC RL dispatch policy
+└── artifacts/
+    └── sac_policy.pt             # trained weights (run train_sac.py to generate)
 ```
 
 ---
