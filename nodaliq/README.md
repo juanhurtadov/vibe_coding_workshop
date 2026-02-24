@@ -60,6 +60,8 @@ Drop-in auth with pre-built UI components. Gives us multi-tenant user IDs (`user
 ### Modal (Phase 5)
 Python serverless platform for the ML/agent layer. Prophet, PuLP, and LangGraph all need Python — Modal lets us deploy Python functions as HTTPS endpoints called from Next.js API routes. Judges see a clean Next.js app on Vercel; the heavy computation happens on Modal. Free tier covers the bootcamp load.
 
+Deploy with: `cd ml && PYTHONUTF8=1 modal deploy main.py` (the `ml/` working directory is required so `add_local_python_source` finds the sibling modules). The image build recompiles Prophet's Stan model from source because the PyPI wheel ships a manylinux binary that's incompatible with Modal's Debian containers.
+
 ### Prophet (forecaster)
 Facebook's time-series model. Chosen because: fast to train (minutes, not hours on CPU), no GPU required, handles ERCOT's strong daily/weekly seasonality natively, and the output is interpretable (you can show the trend + seasonality components). The forecast feeds directly into the LP optimizer.
 
@@ -144,6 +146,7 @@ ml/                               # Python — deployed to Modal
 ├── forecaster.py                 # Prophet price forecast
 ├── optimizer.py                  # PuLP LP dispatch solver
 ├── rl_agent.py                   # SAC RL dispatch policy
+├── prophet_model.stan            # Stan source bundled from sdist (not in PyPI wheel)
 └── artifacts/
     └── sac_policy.pt             # trained weights (run train_sac.py to generate)
 ```
