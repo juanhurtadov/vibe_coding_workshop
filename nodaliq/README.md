@@ -12,7 +12,7 @@ Built as a portfolio SaaS during a vibe coding bootcamp (4-day deadline). Design
 
 **URL:** https://vibe-coding-workshop-three.vercel.app
 
-**Demo account:** `demo@nodaliq.ai` / `NodalIQ2026!`
+**Demo account:** `jfhurtado89+demo@gmail.com` / `NodalIQ2026!`
 
 ### Full run walkthrough
 1. Sign in with the demo account above
