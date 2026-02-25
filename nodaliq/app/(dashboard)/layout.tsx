@@ -50,11 +50,14 @@ export default async function DashboardLayout({
         </nav>
 
         {/* User */}
-        <div className="border-t border-zinc-800 px-6 py-4">
+        <div className="border-t border-zinc-800 px-4 py-4">
           <UserButton
+            showName
             appearance={{
               elements: {
                 userButtonAvatarBox: "w-8 h-8",
+                userButtonBox: "flex-row-reverse gap-3",
+                userButtonOuterIdentifier: "text-sm text-zinc-300",
               },
             }}
           />

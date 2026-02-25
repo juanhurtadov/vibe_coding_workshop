@@ -39,9 +39,17 @@ export async function POST(req: NextRequest) {
   }
 
   const embeddedChunks: { embedding: number[]; content: string }[] = [];
-  for (const chunk of chunks) {
-    const embedding = await embedText(chunk);
-    embeddedChunks.push({ embedding, content: chunk });
+  try {
+    for (const chunk of chunks) {
+      const embedding = await embedText(chunk);
+      embeddedChunks.push({ embedding, content: chunk });
+    }
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json(
+      { error: `Embedding failed: ${msg}` },
+      { status: 502 }
+    );
   }
 
   await db.insert(documents).values(
