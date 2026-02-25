@@ -4,6 +4,7 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 
 const NodeMap = dynamic(() => import("@/components/NodeMap"), { ssr: false });
+const IntelligenceReport = dynamic(() => import("@/components/IntelligenceReport"), { ssr: false });
 import {
   BarChart,
   Bar,
@@ -20,7 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Zap, TrendingUp, Clock, DollarSign } from "lucide-react";
+import { FileText, Loader2, Zap, TrendingUp, Clock, DollarSign } from "lucide-react";
 
 interface HourlySlot {
   hour: number;
@@ -32,10 +33,16 @@ interface HourlySlot {
 interface ForecastPoint {
   ds: string;
   yhat: number;
+  yhat_lower: number;
+  yhat_upper: number;
 }
 
 interface AgentResult {
+  node: string;
   recommendation_text: string;
+  selected_strategy: string;
+  peak_hours: number[];
+  trough_hours: number[];
   lp_schedule: { schedule: HourlySlot[]; total_expected_revenue: number };
   rl_schedule: { schedule: HourlySlot[]; total_expected_revenue: number } | null;
   forecast: ForecastPoint[];
@@ -52,6 +59,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AgentResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [reportOpen, setReportOpen] = useState(false);
 
   async function runAgent() {
     setLoading(true);
@@ -126,6 +134,16 @@ export default function DashboardPage() {
               </option>
             ))}
           </select>
+          {result && (
+            <Button
+              variant="outline"
+              onClick={() => setReportOpen(true)}
+              className="border-zinc-700 text-zinc-300 hover:border-zinc-500 hover:text-white bg-transparent"
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              Intelligence Report
+            </Button>
+          )}
           <Button
             onClick={runAgent}
             disabled={loading}
@@ -158,6 +176,14 @@ export default function DashboardPage() {
           <Loader2 className="h-5 w-5 animate-spin text-cyan-400" />
           Running forecast → LP optimizer → LangGraph agent…
         </div>
+      )}
+
+      {result && reportOpen && (
+        <IntelligenceReport
+          open={reportOpen}
+          onClose={() => setReportOpen(false)}
+          data={result}
+        />
       )}
 
       {result && (
