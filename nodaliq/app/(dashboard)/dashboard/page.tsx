@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 
 const NodeMap = dynamic(() => import("@/components/NodeMap"), { ssr: false });
@@ -54,12 +54,26 @@ function formatUsd(v: number) {
   return `$${v.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
+const STORAGE_KEY = "nodaliq_last_result";
+
 export default function DashboardPage() {
   const [node, setNode] = useState("HB_NORTH");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AgentResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
+
+  // Restore last result from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved) as AgentResult;
+        setResult(parsed);
+        setNode(parsed.node ?? "HB_NORTH");
+      }
+    } catch {}
+  }, []);
 
   async function runAgent() {
     setLoading(true);
@@ -75,7 +89,9 @@ export default function DashboardPage() {
         setError(d.error ?? "Agent run failed");
         return;
       }
-      setResult(await res.json());
+      const data = await res.json();
+      setResult(data);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch {
       setError("Network error — is the dev server running?");
     } finally {
@@ -120,7 +136,14 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-          <p className="mt-1 text-sm text-zinc-400">AI-powered dispatch recommendation for today</p>
+          <p className="mt-1 text-sm text-zinc-400">
+            AI-powered dispatch recommendation for today
+            {result && (
+              <span className="ml-2 text-zinc-600">
+                · last run {new Date(result.forecast?.[0]?.ds ?? "").toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+              </span>
+            )}
+          </p>
         </div>
         <div className="flex items-center gap-3">
           <select
