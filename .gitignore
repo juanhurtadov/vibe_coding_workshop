@@ -12,6 +12,9 @@ build/
 
 # Node.js
 node_modules/
+.next/
+.env.local
+.env*.local
 
 # OS
 .DS_Store
