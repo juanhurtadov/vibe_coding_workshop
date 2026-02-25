@@ -14,9 +14,14 @@ AI-powered battery dispatch intelligence that analyzes real ERCOT nodal prices, 
 ## Live Deployment URL
 https://vibe-coding-workshop-three.vercel.app
 
-## Demo Account
-Email: `jfhurtado89+demo@gmail.com`
-Password: `NodalIQ2026!`
+## Demo Account (ready to use — no sign-up needed)
+
+| Field    | Value                          |
+|----------|-------------------------------|
+| Email    | `jfhurtado89+demo@gmail.com`  |
+| Password | `NodalIQ2026!`                |
+
+> Sign in at: https://vibe-coding-workshop-three.vercel.app/sign-in
 
 ### Full walkthrough
 1. Sign in with the demo account above
