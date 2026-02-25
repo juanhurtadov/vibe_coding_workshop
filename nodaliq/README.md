@@ -8,6 +8,35 @@ Built as a portfolio SaaS during a vibe coding bootcamp (4-day deadline). Design
 
 ---
 
+## Live demo
+
+**URL:** https://vibe-coding-workshop-three.vercel.app
+
+**Demo account:** `demo@nodaliq.ai` / `NodalIQ2026!`
+
+### Full run walkthrough
+1. Sign in with the demo account above
+2. Go to **Settings** — battery profile is pre-configured (1 MWh / 250 kW / 85% RTE, HB_NORTH)
+3. Go to **Dashboard** — select a node (e.g. HB_NORTH) → click **Run Agent**
+4. The pipeline runs: ERCOT prices → Prophet forecast → LP optimizer + SAC RL → LangGraph/GPT-4o synthesis (~25 seconds)
+5. View the recommendation card, dispatch chart, and ERCOT node map
+6. Click **Intelligence Report** for the full pipeline breakdown with print/PDF export
+7. Go to **Chat** — upload a PDF (e.g. any energy tariff document) → ask questions about it
+8. Go to **Performance** — cumulative P&L chart vs. flat baseline
+
+### Modal endpoints (all live)
+| Endpoint | URL | Avg response |
+|----------|-----|--------------|
+| Prophet forecast | `https://juanhurtadov--nodaliq-ml-forecast.modal.run` | ~8s (cold) / ~2s (warm) |
+| LP optimizer | `https://juanhurtadov--nodaliq-ml-optimize.modal.run` | ~3s (cold) / <1s (warm) |
+| SAC RL policy | `https://juanhurtadov--nodaliq-ml-rl.modal.run` | ~3s (cold) / <1s (warm) |
+| LangGraph agent | `https://juanhurtadov--nodaliq-ml-agent.modal.run` | ~10s (cold) / ~5s (warm) |
+
+### Data mode
+The production deployment uses **real ERCOT DAM prices** (pulled via ERCOT OAuth B2C). If the ERCOT API is unavailable, `/api/ingest` falls back to seeded synthetic prices so the rest of the pipeline always runs. The Dashboard's "Run Agent" button calls `/api/ingest` automatically before running the forecast.
+
+---
+
 ## What it does
 
 Battery owners in ERCOT face the same question every day: when do I charge, when do I discharge, and how much am I leaving on the table? Most solve this manually or with vendor-locked tools. NodalIQ automates the intelligence layer:
