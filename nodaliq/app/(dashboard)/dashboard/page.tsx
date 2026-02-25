@@ -62,8 +62,9 @@ export default function DashboardPage() {
   const [result, setResult] = useState<AgentResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
+  const [batteryProfileId, setBatteryProfileId] = useState<string | null>(null);
 
-  // Restore last result from localStorage on mount
+  // Restore last result from localStorage + fetch battery profile on mount
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -73,6 +74,11 @@ export default function DashboardPage() {
         setNode(parsed.node ?? "HB_NORTH");
       }
     } catch {}
+
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then((d) => { if (d.profile?.id) setBatteryProfileId(d.profile.id); })
+      .catch(() => {});
   }, []);
 
   async function runAgent() {
@@ -82,7 +88,7 @@ export default function DashboardPage() {
       const res = await fetch("/api/agent/run", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ node }),
+        body: JSON.stringify({ node, ...(batteryProfileId && { batteryProfileId }) }),
       });
       if (!res.ok) {
         const d = await res.json();
