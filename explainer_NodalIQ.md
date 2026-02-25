@@ -14,6 +14,29 @@ AI-powered battery dispatch intelligence that analyzes real ERCOT nodal prices, 
 ## Live Deployment URL
 https://vibe-coding-workshop-three.vercel.app
 
+## Demo Account
+Email: `jfhurtado89+demo@gmail.com`
+Password: `NodalIQ2026!`
+
+### Full walkthrough
+1. Sign in with the demo account above
+2. **Settings** — battery profile is pre-configured (1 MWh / 250 kW / 85% RTE, HB_NORTH)
+3. **Dashboard** — select a node → click **Run Agent** (~25 seconds end-to-end)
+4. View recommendation card, dispatch chart, and ERCOT node map
+5. Click **Intelligence Report** for the full pipeline breakdown with print/PDF
+6. **Chat** — a battery dispatch document is already uploaded; ask questions about it
+7. **Performance** — cumulative P&L chart vs. flat baseline
+
+### Modal endpoints (all live)
+| Endpoint | URL |
+|----------|-----|
+| Prophet forecast | `https://juanhurtadov--nodaliq-ml-forecast.modal.run` |
+| LP optimizer | `https://juanhurtadov--nodaliq-ml-optimize.modal.run` |
+| SAC RL policy | `https://juanhurtadov--nodaliq-ml-rl.modal.run` |
+| LangGraph agent | `https://juanhurtadov--nodaliq-ml-agent.modal.run` |
+
+Production uses real ERCOT DAM prices with a seed fallback if the API is unavailable.
+
 ## GitHub Repository
 https://github.com/juanhurtadov/vibe_coding_workshop
 
