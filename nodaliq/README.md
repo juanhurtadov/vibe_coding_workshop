@@ -33,7 +33,42 @@ Built as a portfolio SaaS during a vibe coding bootcamp (4-day deadline). Design
 | LangGraph agent | `https://juanhurtadov--nodaliq-ml-agent.modal.run` | ~10s (cold) / ~5s (warm) |
 
 ### Data mode
-The production deployment uses **real ERCOT DAM prices** (pulled via ERCOT OAuth B2C). If the ERCOT API is unavailable, `/api/ingest` falls back to seeded synthetic prices so the rest of the pipeline always runs. The Dashboard's "Run Agent" button calls `/api/ingest` automatically before running the forecast.
+The production deployment uses **real ERCOT DAM prices** (pulled via ERCOT OAuth B2C). If the ERCOT API is unavailable, `/api/ingest` falls back to seeded synthetic prices so the rest of the pipeline always runs. There are no environment flags needed — the fallback is automatic.
+
+### Modal rate limits
+Modal endpoints cold-start in ~8–10s on first call; warm responses are 1–3s. No hard rate limits on the free tier for the demo load. All four endpoints are live and responding as of Feb 24 2026.
+
+### Sample `/api/agent/run` response (HB_NORTH, Feb 24 2026)
+
+```json
+{
+  "node": "HB_NORTH",
+  "selected_strategy": "lp",
+  "lp_schedule": {
+    "total_expected_revenue": 55.27,
+    "status": "Optimal",
+    "schedule": [
+      { "hour": 1,  "action": "discharge", "amount_kw": 250,    "expected_revenue": 22.52, "soc_pct": 0.25 },
+      { "hour": 4,  "action": "charge",    "amount_kw": 250,    "expected_revenue": -18.08, "soc_pct": 0.46 },
+      { "hour": 5,  "action": "charge",    "amount_kw": 161.76, "expected_revenue": -12.16, "soc_pct": 0.60 },
+      { "hour": 7,  "action": "discharge", "amount_kw": 250,    "expected_revenue": 23.38, "soc_pct": 0.35 },
+      { "hour": 8,  "action": "discharge", "amount_kw": 250,    "expected_revenue": 23.06, "soc_pct": 0.10 },
+      { "hour": 13, "action": "charge",    "amount_kw": 250,    "expected_revenue": -13.25, "soc_pct": 0.31 },
+      { "hour": 17, "action": "discharge", "amount_kw": 100,    "expected_revenue": 6.69,  "soc_pct": 0.85 },
+      { "hour": 18, "action": "discharge", "amount_kw": 250,    "expected_revenue": 20.55, "soc_pct": 0.60 },
+      { "hour": 19, "action": "discharge", "amount_kw": 250,    "expected_revenue": 21.17, "soc_pct": 0.35 },
+      { "hour": 20, "action": "discharge", "amount_kw": 250,    "expected_revenue": 17.29, "soc_pct": 0.10 }
+    ]
+  },
+  "rl_schedule": { "total_expected_revenue": 17.92, "policy": "sac_random_init" },
+  "recommendation_text": "Based on today's price forecast, charge during the trough hours at 22:00–23:00 ($11–20/MWh) and discharge during peaks at 01:00 ($90/MWh) and 07:00–08:00 ($92–93/MWh). Expected revenue: $55.27. Key risk: unexpected price volatility could impact profitability.",
+  "peak_hours": [0, 6, 2, 1, 8, 7],
+  "trough_hours": [23, 22, 21, 15, 14, 16],
+  "forecast": "[ 24 Prophet points with yhat / yhat_lower / yhat_upper — see full payload in agent_run_sample.json ]"
+}
+```
+
+Full raw payload: [`agent_run_sample.json`](../agent_run_sample.json)
 
 ---
 
